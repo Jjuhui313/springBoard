@@ -13,6 +13,7 @@ import com.example.springboard.repository.BoardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +27,7 @@ public class BoardService {
     private final BoardRepository boardRepository;
 
     @Transactional
-    public MessageResponse<BoardResponseDto> createBoard(BoardRequestDto boardRequestDto) {
+    public ResponseEntity<MessageResponse<BoardResponseDto>> createBoard(BoardRequestDto boardRequestDto) {
         Board board = Board.builder()
                 .title(boardRequestDto.getTitle())
                 .content(boardRequestDto.getContent())
@@ -34,36 +35,36 @@ public class BoardService {
                 .build();
         boardRepository.save(board);
 
-        return new MessageResponse<>(SuccessMsg.CREATE_BOARD_SUCCESS.getCode(), SuccessMsg.CREATE_BOARD_SUCCESS.getMessage(), BoardResponseDto.from(board));
+        return MessageResponse.success(SuccessMsg.CREATE_BOARD_SUCCESS, BoardResponseDto.from(board));
     }
 
-    public MessageResponse<List<BoardListResponseDto>> getBoardList(int page, int pageSize) {
-        return new MessageResponse<>(SuccessMsg.GET_BOARD_SUCCESS.getCode(), SuccessMsg.GET_BOARD_SUCCESS.getMessage(),boardRepository.findAllByDeleteStatus(
+    public ResponseEntity<MessageResponse<List<BoardListResponseDto>>> getBoardList(int page, int pageSize) {
+        return MessageResponse.success(SuccessMsg.GET_BOARD_SUCCESS, boardRepository.findAllByDeleteStatus(
                 DeleteStatus.ACTIVE,
                 PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "id"))
         ).map(BoardListResponseDto::from).toList());
     }
 
-    public MessageResponse<BoardResponseDto> getBoard(Long boardId) {
-        return new MessageResponse<>(SuccessMsg.GET_BOARD_SUCCESS.getCode(), SuccessMsg.GET_BOARD_SUCCESS.getMessage(), boardRepository.findBoardWithCommentsByBoardIdAAndDeleteStatus(
+    public ResponseEntity<MessageResponse<BoardResponseDto>> getBoard(Long boardId) {
+        return MessageResponse.success(SuccessMsg.GET_BOARD_SUCCESS, boardRepository.findBoardWithCommentsByBoardIdAAndDeleteStatus(
                 boardId, DeleteStatus.ACTIVE)
                 .map(BoardResponseDto::from)
                 .orElseThrow(() -> new CustomException(ExceptionMsg.NOT_FOUND_BOARD)));
     }
 
     @Transactional
-    public MessageResponse<BoardResponseDto> updateBoard(Long boardId, BoardRequestDto boardRequestDto) {
+    public ResponseEntity<MessageResponse<BoardResponseDto>> updateBoard(Long boardId, BoardRequestDto boardRequestDto) {
         Optional<Board> findBoard = boardRepository.findByIdAndDeleteStatus(boardId, DeleteStatus.ACTIVE);
         Board board = findBoard.orElseThrow(() -> new CustomException(ExceptionMsg.NOT_FOUND_BOARD));
         board.changeBoard(boardRequestDto);
-        return new MessageResponse<>(SuccessMsg.UPDATE_BOARD_SUCCESS.getCode(), SuccessMsg.UPDATE_BOARD_SUCCESS.getMessage(), BoardResponseDto.from(board));
+        return MessageResponse.success(SuccessMsg.UPDATE_BOARD_SUCCESS, BoardResponseDto.from(board));
     }
 
     @Transactional
-    public MessageResponse<String> deleteBoard(Long boardId) {
+    public ResponseEntity<MessageResponse<String>> deleteBoard(Long boardId) {
         Optional<Board> findBoard = boardRepository.findByIdAndDeleteStatus(boardId, DeleteStatus.ACTIVE);
         Board board = findBoard.orElseThrow(() -> new CustomException(ExceptionMsg.NOT_FOUND_BOARD));
         boardRepository.delete(board);
-        return new MessageResponse<>(SuccessMsg.DELETE_BOARD_SUCCESS.getCode(), SuccessMsg.DELETE_BOARD_SUCCESS.getMessage());
+        return MessageResponse.success(SuccessMsg.DELETE_BOARD_SUCCESS, "");
     }
 }

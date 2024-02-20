@@ -6,6 +6,7 @@ import com.example.springboard.dto.CommentResponseDto;
 import com.example.springboard.exception.message.MessageResponse;
 import com.example.springboard.service.CommentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,7 +17,7 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/{boardId}/comment")
-    public MessageResponse<BoardResponseDto> createComment(
+    public ResponseEntity<MessageResponse<BoardResponseDto>> createComment(
             @PathVariable Long boardId,
             @RequestBody CommentRequestDto commentRequestDto
     ) {
@@ -24,7 +25,7 @@ public class CommentController {
     }
 
     @PutMapping("/{boardId}/comment/{commentId}")
-    public MessageResponse<BoardResponseDto> updateComment(
+    public ResponseEntity<MessageResponse<BoardResponseDto>> updateComment(
             @PathVariable Long boardId,
             @PathVariable Long commentId,
             @RequestBody CommentRequestDto commentRequestDto
@@ -33,7 +34,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/{boardId}/comment/{commentId}")
-    public MessageResponse<String> deleteComment(
+    public ResponseEntity<MessageResponse<String>> deleteComment(
             @PathVariable Long boardId,
             @PathVariable Long commentId
     ) {
